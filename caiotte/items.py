@@ -8,7 +8,17 @@
 import scrapy
 
 
-class CaiotteItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class ScholarItem(scrapy.Item):
+    name        = scrapy.Field()
+    email       = scrapy.Field()
+    title       = scrapy.Field()
+    org         = scrapy.Field()
+    org_detail  = scrapy.Field()
+    study_field = scrapy.Field()
+    biography   = scrapy.Field()
+    papers      = scrapy.Field()
+    img_url     = scrapy.Field()
+
+class FriendShip(scrapy.Item):
+    first_user  = scrapy.Field()
+    second_user = scrapy.Field()
