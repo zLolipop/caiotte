@@ -15,7 +15,6 @@ class ScholarSpider(scrapy.Spider):
         with open('caiotte/spiders/start_urls_test.json', 'r') as f:
             urls = json.load(f)
         for url in urls['start_urls']:
-            print(url)
             yield scrapy.Request(url, callback=self.parse_scholar)
 
     def _get_scholar_name(self, response):
@@ -35,14 +34,20 @@ class ScholarSpider(scrapy.Spider):
 
     def _get_scholar_title(self, response):
         title = response.xpath("//span[@id='scholarTitle']/@title")
+        if not title:
+            title = response.xpath("//span[@id='scholartitle']/@title")
+
         if title:
             raw_title = title.extract_first()
             return raw_title.replace('学术职务: ', '') if '学术职务: ' in raw_title else raw_title.replace('Scholar title:', '')
 
     def _get_scholar_org(self, response):
-        work_place=response.xpath("//span[@id='scholarwork']/@title")
+        work_place=response.css("#scholarwork").xpath('string(.)')
         if work_place:
-            return work_place.extract_first().split(" \xa0 ")
+            work_place_processed = work_place.extract_first().split()
+            if len(work_place_processed) > 3:
+                work_place_processed = [' '.join(work_place_processed)]
+            return work_place_processed
 
     def _get_scholar_bio(self, response):
         biography = response.css("#个人简介").xpath("string(./parent::*//div[2])")
@@ -67,33 +72,69 @@ class ScholarSpider(scrapy.Spider):
             return None
 
     def parse_scholar(self, response):
-        # scholar_name = self._get_scholar_name(response)
-        #
-        # if scholar_name is None:
-        #     return
-        #
-        # scholar_email = self._get_scholar_email(response)
-        # title = self._get_scholar_title(response)
-        # org = self._get_scholar_org(response)
-        # biography = self._get_scholar_bio(response)
-        # study_field = self._get_study_field(response)
-        page_url = response.url
-        # img_url = self._get_scholar_img(response)
-        shcolar_id = uuid.uuid1().hex
+        scholar_name = self._get_scholar_name(response)
 
+        if scholar_name is None:
+            return
+        scholar_email = self._get_scholar_email(response)
+        title = self._get_scholar_title(response)
+        org = self._get_scholar_org(response)
+        biography = self._get_scholar_bio(response)
+        study_field = self._get_study_field(response)
+        page_url = response.url
+        username = page_url.split('/')[-1]
+        img_url = self._get_scholar_img(response)
+
+        self.logger.info("url is {url}------>{name}".format(url=page_url,name=scholar_name))
+
+        target= items.ScholarItem(username=username,
+                                  name=scholar_name,
+                                  email=scholar_email,
+                                  title=title,
+                                  org=org,
+                                  biography=biography,
+                                  study_field=study_field,
+                                  page_url=page_url,
+                                  img_url=img_url)
+        self.logger.info(target['org'])
+        yield target
+
+
+        # -----------------paper and friendship request------------------------
 
         paper_request = scrapy.FormRequest('http://www.scholat.com/getAcademic_Paper.html',
-                                            formdata={'Entry':page_url.split('/')[-1]},
+                                            formdata={'Entry':username},
                                             callback=self.parse_papers)
-        paper_request.meta['scholar_id'] = shcolar_id
+        paper_request.meta['username'] = username
         yield paper_request
+
+        friend_request = scrapy.FormRequest('http://www.scholat.com/getPortalFriendsList.html',
+                                             formdata={'Entry':username},
+                                             callback=self.parse_friend)
+        friend_request.meta['username'] = username
+        yield friend_request
+        # ---------------------------------------------------------------------
 
     def parse_papers(self, response):
         papers_info = json.loads(response.text)[0]
         if papers_info[0]['title'] == "没论文":
             return
         names = map(lambda paper: paper['title'], papers_info)
-        scholar_id = response.meta['scholar_id']
+        username = response.meta['username']
 
-        the_item = items.ScholarPaper(scholar=scholar_id, papers_name=names)
-        print(the_item)
+        the_item = items.ScholarPaper(scholar=username, papers_name=names)
+        yield the_item
+
+
+    def parse_friend(self, response):
+        friends_info = json.loads(response.text)
+        if not friends_info:
+            return
+
+        username = response.meta['username']
+        for friend in friends_info:
+            friend_username = friend['username']
+            yield scrapy.Request('http://www.scholat.com/{username}'.format(username=friend_username),
+                                  callback=self.parse_scholar)
+            yield items.FriendShip(first_user=username, second_user=friend_username)
+            break

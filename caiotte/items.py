@@ -9,6 +9,7 @@ import scrapy
 
 
 class ScholarItem(scrapy.Item):
+    username    = scrapy.Field()
     name        = scrapy.Field()
     email       = scrapy.Field()
     title       = scrapy.Field()
