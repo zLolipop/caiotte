@@ -14,11 +14,18 @@ class ScholarItem(scrapy.Item):
     title       = scrapy.Field()
     org         = scrapy.Field()
     org_detail  = scrapy.Field()
-    study_field = scrapy.Field()
     biography   = scrapy.Field()
-    papers      = scrapy.Field()
+    study_field = scrapy.Field()
+
+    page_url    = scrapy.Field()
     img_url     = scrapy.Field()
+
 
 class FriendShip(scrapy.Item):
     first_user  = scrapy.Field()
     second_user = scrapy.Field()
+
+
+class ScholarPaper(scrapy.Item):
+    scholar      = scrapy.Field()
+    papers_name  = scrapy.Field()
