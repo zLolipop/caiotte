@@ -44,19 +44,18 @@ class CaiottePipeline(object):
         username = item.get('scholar')
         papers = item.get('papers')
         with orm.db_session:
-            scholar = Scholar.get(username=username)
             for title, summary, date, source in papers:
-                Paper(paper_id=uuid1().hex,
-                      title = title,
-                      abstract = summary,
-                      published_date = date,
-                      source = source,
-                      author=scholar)
+                if not title:
+                    continue
+                PaperTemp(title = title,
+                          abstract = summary,
+                          published_date = date,
+                          source = source,
+                          author_name=username)
 
     def _friend_storage(self, item):
         first_user  = item.get('first_user')
         second_user = item.get('second_user')
         with orm.db_session:
-            user1 = Scholar.get(username=first_user)
-            user2 = Scholar.get(username=second_user)
-            print(user1.username, "="*5, user2.usernam)
+            FriendTemp(scholar1_name=first_user,
+                       scholar2_name=second_user)

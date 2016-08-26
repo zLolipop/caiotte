@@ -14,7 +14,6 @@ class ScholarItem(scrapy.Item):
     email       = scrapy.Field()
     title       = scrapy.Field()
     org         = scrapy.Field()
-    org_detail  = scrapy.Field()
     biography   = scrapy.Field()
     study_field = scrapy.Field()
 
@@ -28,5 +27,5 @@ class FriendShip(scrapy.Item):
 
 
 class ScholarPaper(scrapy.Item):
-    scholar      = scrapy.Field()
-    papers_name  = scrapy.Field()
+    scholar = scrapy.Field()
+    papers  = scrapy.Field()

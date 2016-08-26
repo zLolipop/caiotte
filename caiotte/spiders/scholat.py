@@ -96,7 +96,6 @@ class ScholarSpider(scrapy.Spider):
                                   study_field=study_field,
                                   page_url=page_url,
                                   img_url=img_url)
-        self.logger.info(target['org'])
         yield target
 
 
@@ -119,10 +118,10 @@ class ScholarSpider(scrapy.Spider):
         papers_info = json.loads(response.text)[0]
         if papers_info[0]['title'] == "没论文":
             return
-        names = map(lambda paper: paper['title'], papers_info)
+        names = map(lambda paper: (paper['title'], paper['summary'], paper['date'], paper['source']), papers_info)
         username = response.meta['username']
 
-        the_item = items.ScholarPaper(scholar=username, papers_name=names)
+        the_item = items.ScholarPaper(scholar=username, papers=names)
         yield the_item
 
 
@@ -137,4 +136,3 @@ class ScholarSpider(scrapy.Spider):
             yield scrapy.Request('http://www.scholat.com/{username}'.format(username=friend_username),
                                   callback=self.parse_scholar)
             yield items.FriendShip(first_user=username, second_user=friend_username)
-            break
