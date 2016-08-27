@@ -15,7 +15,7 @@ class Scholar(db.Entity):
     org         = orm.Optional(str, nullable=True)
     org_detail  = orm.Optional(str, nullable=True)
     biography   = orm.Optional(orm.LongStr, nullable=True)
-    study_field = orm.Optional(str, 512, nullable=True)
+    study_field = orm.Optional(orm.LongStr, nullable=True)
     page_url    = orm.Optional(str, 512, nullable=True)
     img_url     = orm.Optional(str, 512, nullable=True)
 
@@ -35,7 +35,7 @@ class Paper(db.Entity):
     title          = orm.Required(str)
     abstract       = orm.Optional(orm.LongStr)
     published_date = orm.Optional(str)
-    source         = orm.Optional(str)
+    source         = orm.Optional(orm.LongStr)
     author         = orm.Required(Scholar)
 
 class FriendTemp(db.Entity):
@@ -46,7 +46,7 @@ class PaperTemp(db.Entity):
     title          = orm.Required(str)
     abstract       = orm.Optional(orm.LongStr)
     published_date = orm.Optional(str)
-    source         = orm.Optional(str)
+    source         = orm.Optional(orm.LongStr)
     author_name    = orm.Required(str)
 
 
