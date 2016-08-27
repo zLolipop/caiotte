@@ -54,8 +54,12 @@ class CaiottePipeline(object):
                           author_name=username)
 
     def _friend_storage(self, item):
-        first_user  = item.get('first_user')
-        second_user = item.get('second_user')
+        first_user_name  = item.get('first_user')
+        second_user_name = item.get('second_user')
+        if first_user_name > second_user_name:
+            first_user_name, second_user_name = second_user_name, first_user_name
         with orm.db_session:
-            FriendTemp(scholar1_name=first_user,
-                       scholar2_name=second_user)
+            if not FriendTemp.get(scholar1_name=first_user_name,
+                                  scholar2_name=second_user_name):
+                FriendTemp(scholar1_name=first_user_name,
+                           scholar2_name=second_user_name)
