@@ -51,6 +51,8 @@ class ScholarSpider(scrapy.Spider):
 
     def _get_scholar_bio(self, response):
         biography = response.css("#个人简介").xpath("string(./parent::*//div[2])")
+        if not biography:
+            biography = response.css("#个人概况").xpath("string(./parent::*//div[2])")
         if biography:
             return biography.extract_first().strip()
 
